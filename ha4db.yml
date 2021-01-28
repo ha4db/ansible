@@ -4,3 +4,4 @@
   become: yes
   roles:
     - roles/swap
+    - roles/rbenv

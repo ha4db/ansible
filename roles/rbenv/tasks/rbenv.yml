@@ -1,0 +1,79 @@
+---
+- name: Apt install some packages
+  apt:
+    name:
+      - libgeos++-dev
+      - libgeos-dev
+      - postgresql-server-dev-12
+      - nodejs
+      - git
+      - autoconf
+      - bison
+      - build-essential
+      - libssl-dev
+      - libyaml-dev
+      - libreadline6-dev
+      - zlib1g-dev
+      - libncurses5-dev
+      - postgresql-client
+      - libpq-dev
+    state: latest
+- name: Add appsrv user
+  user:
+    name: appsrv
+    shell: /bin/bash
+- name: chechout rbenv
+  git: 
+    repo: https://github.com/rbenv/rbenv.git
+    version: master 
+    dest: /home/appsrv/.rbenv
+  become_user: appsrv
+  become: true
+- name: checkout rbenv-build
+  git:
+    repo: https://github.com/rbenv/ruby-build.git
+    version: master
+    dest: /home/appsrv/.rbenv/plugins/ruby-build
+  become_user: appsrv
+  become: true
+- name: setup rc 1
+  lineinfile:
+    dest: /home/appsrv/.profile
+    insertafter: EOF
+    line: "export PATH=\"/home/appsrv/.rbenv/bin:$PATH\""
+    create: yes
+  become_user: "{{ app_user }}"
+  become: true
+- name: setup rc 2
+  lineinfile:
+    dest: /home/appsrv/.profile
+    insertafter: EOF
+    line: "eval \"$(rbenv init -)\""
+    create: yes
+  become_user: appsrv
+  become: true
+- name: check ruby
+  shell: /bin/bash -lc "rbenv versions"
+  become_user: appsrv
+  register: rbenv_versions
+  failed_when: rbenv_versions.rc not in [0, 1]
+  become: true
+- name: install ruby
+  shell: /bin/bash -lc "rbenv install 2.7.1 && rbenv rehash"
+  become_user: appsrv
+  when: rbenv_versions.stdout.find("2.7.1") == -1
+  become: true
+- name: global ruby
+  shell: /bin/bash -lc "rbenv global 2.7.1 && rbenv rehash"
+  become_user: appsrv
+  become: true
+# - name: check gem
+#   shell: /bin/bash -lc "gem list"
+#   become_user: appsrv
+#   register: gem_list
+#   become: true
+# - name: install bundle
+#   shell: /bin/bash -lc "gem install bundler:2.1.4"
+#   become_user: appsrv
+#   when: gem_list.stdout.find("bundle") == -1
+#   become: true
