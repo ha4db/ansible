@@ -42,7 +42,7 @@
     insertafter: EOF
     line: "export PATH=\"/home/appsrv/.rbenv/bin:$PATH\""
     create: yes
-  become_user: "{{ app_user }}"
+  become_user: appsrv
   become: true
 - name: setup rc 2
   lineinfile:
