@@ -1,0 +1,6 @@
+- name: run the playbook to setup ha4db
+  hosts: 127.0.0.1
+  connection: local
+  become: yes
+  roles:
+    - roles/swap
