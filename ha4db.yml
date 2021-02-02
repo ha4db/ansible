@@ -5,3 +5,4 @@
   roles:
     - roles/swap
     - roles/rbenv
+    - roles/ha4db
