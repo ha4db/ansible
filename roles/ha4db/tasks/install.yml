@@ -1,3 +1,18 @@
+- name: install docker
+  apt:
+    name:
+      - docker.io
+    state: latest
+- name: Add to docker group
+  user:
+    name: appsrv
+    groups: docker
+    append: yes
+- name: Start docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
 - name: chechout ha4db
   git:
     repo: https://github.com/ha4db/ha4db.git
