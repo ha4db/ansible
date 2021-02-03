@@ -27,14 +27,17 @@
     path: /srv/ha4db/app/shared/config/credentials/production.key
   register: production_key_check
 - name: create secret_key_base
-  shell: ruby -e "require 'securerandom'; puts SecureRandom.hex(128)"
+  shell: bash -lc "ruby -e 'require :securerandom.to_s; puts SecureRandom.hex(128)'"
   args:
     chdir: /home/appsrv/ha4db
   become_user: appsrv
   become: true
   register: secret_key_base
+- name: editor environment
+  set_fact:
+    editor_environment: "echo >> secret_key_base: {{ secret_key_base.stdout }}"
 - name: generate production.key and enc
-  shell: 'EDITOR="echo >> secret_key_base: {{ secret_key_base.stdout }}" bundle exec rails credentials:edit --environment production'
+  shell: bash -lc "EDITOR='{{ editor_environment }}' bundle exec rails credentials:edit --environment production"
   args:
     chdir: /srv/ha4db/app/current
   become_user: appsrv
