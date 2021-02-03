@@ -1,3 +1,4 @@
+# install docker
 - name: install docker
   apt:
     name:
@@ -13,6 +14,7 @@
     name: docker
     state: started
     enabled: yes
+# checkout and setup app
 - name: chechout ha4db
   git:
     repo: https://github.com/ha4db/ha4db.git
@@ -62,6 +64,60 @@
   become_user: appsrv
   become: true
   when: not production_key_check.stat.exists
+# setup postgresql
+- name: Apt install some packages
+  apt:
+    name:
+      - postgresql-12-postgis-3
+      - python3-psycopg2
+    state: latest
+- name: create db user
+  postgresql_user:
+    name: ha4db
+    password: "{{ postgresql_password.stdout }}"
+    role_attr_flags: CREATEDB
+  become_user: postgres
+  become: true
+  when: not production_key_check.stat.exists
+- name: create database
+  postgresql_db:
+    name: ha4db_production
+    owner: ha4db
+    encoding: UTF-8
+    template: template0
+  become_user: postgres
+  become: true
+  when: not production_key_check.stat.exists
+- name: add postgis function
+  postgresql_ext:
+    name: postgis
+    db: ha4db_production
+  become_user: postgres
+  become: true
+  when: not production_key_check.stat.exists
+- name: add postgis function
+  postgresql_ext:
+    name: postgis_topology
+    db: ha4db_production
+  become_user: postgres
+  become: true
+  when: not production_key_check.stat.exists
+- name: change listen_address
+  lineinfile:
+    dest: /etc/postgresql/12/main/postgresql.conf
+    regexp: "^#listen_addresses"
+    line: "listen_addresses = '*'"
+    state: present
+    backup: yes
+  become_user: postgres
+  register: postgresql_conf
+  become: true
+- name: restart postgresql
+  service:
+    name: postgresql
+    state: restarted
+  when: postgresql_conf is changed
+# deploy
 - name: create deploy_path
   file:
     dest: /srv/ha4db/app
