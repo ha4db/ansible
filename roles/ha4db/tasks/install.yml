@@ -22,11 +22,26 @@
   become_user: appsrv
   become: true
   register: secret_key_base
+- name: create postgresql_password
+  shell: bash -lc "ruby -e 'require :securerandom.to_s; puts SecureRandom.alphanumeric(30)'"
+  args:
+    chdir: /home/appsrv/ha4db
+  become_user: appsrv
+  become: true
+  register: postgresql_password
 - name: editor environment
   set_fact:
-    editor_environment: "echo secret_key_base: {{ secret_key_base.stdout }} >>"
-- name: generate production.key and enc
-  shell: bash -lc "EDITOR='{{ editor_environment }}' bundle exec rails credentials:edit --environment production"
+    secret_key_base_editor_environment: "echo secret_key_base: {{ secret_key_base.stdout }} >>"
+    postgresql_editor_environment: "echo database_url: postgis://ha4db:{{ postgresql_password.stdout }}@localhost/ha4db_production >>"
+- name: generate production.key and enc with secret_key_base
+  shell: bash -lc "EDITOR='{{ secret_key_base_editor_environment }}' bundle exec rails credentials:edit --environment production"
+  args:
+    chdir: /home/appsrv/ha4db
+  become_user: appsrv
+  become: true
+  when: not production_key_check.stat.exists
+- name: write postgresql database_url
+  shell: bash -lc "EDITOR='{{ postgresql_editor_environment }}' bundle exec rails credentials:edit --environment production"
   args:
     chdir: /home/appsrv/ha4db
   become_user: appsrv
@@ -68,3 +83,4 @@
     chdir: /home/appsrv/ha4db
   become_user: appsrv
   become: true
+
