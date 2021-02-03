@@ -16,3 +16,26 @@
     dest: /srv/ha4db/app
     state: directory
     owner: appsrv
+- name: run deploy
+  command: bash -lc "bundle exec cap production deploy"
+  args:
+    chdir: /home/appsrv/ha4db
+  become_user: appsrv
+  become: true
+- name: check config/credentials/production.key
+  stat:
+    path: /srv/ha4db/app/shared/config/credentials/production.key
+  register: production_key_check
+- name: create secret_key_base
+  shell: ruby -e "require 'securerandom'; puts SecureRandom.hex(128)"
+  become_user: appsrv
+  become: true
+  register: secret_key_base
+- name: generate production.key and enc
+  shell: 'EDITOR="echo >> secret_key_base: {{ secret_key_base.stdout }}" bundle exec rails credentials:edit --environment production'
+  args:
+    chdir: /home/appsrv/ha4db/current
+  become_user: appsrv
+  become: true
+  when: not production_key_check.stat.exists
+
