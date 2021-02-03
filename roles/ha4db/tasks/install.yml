@@ -14,6 +14,21 @@
     name: docker
     state: started
     enabled: yes
+# install nodejs
+- name: install package for nodejs
+  apt:
+    name:
+      - curl
+      - gnupg
+    state: latest
+- name: setup debian source
+  shell: bash -lc "curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -"
+- name: install nodejs and yarn
+  apt:
+    name:
+      - nodejs
+      - yarn
+    state: latest
 # checkout and setup app
 - name: chechout ha4db
   git:

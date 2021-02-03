@@ -3,6 +3,7 @@
   connection: local
   become: yes
   roles:
+    - roles/common
     - roles/swap
     - roles/rbenv
     - roles/ha4db
