@@ -24,7 +24,7 @@
   register: secret_key_base
 - name: editor environment
   set_fact:
-    editor_environment: "echo >> secret_key_base: {{ secret_key_base.stdout }}"
+    editor_environment: "echo secret_key_base: {{ secret_key_base.stdout }} >>"
 - name: generate production.key and enc
   shell: bash -lc "EDITOR='{{ editor_environment }}' bundle exec rails credentials:edit --environment production"
   args:
@@ -37,6 +37,31 @@
     dest: /srv/ha4db/app
     state: directory
     owner: appsrv
+- name: run deploy:check
+  command: bash -lc "bundle exec cap production deploy:check"
+  args:
+    chdir: /home/appsrv/ha4db
+  become_user: appsrv
+  become: true
+- name: create deploy_path shared/config/credentials
+  file:
+    dest: /srv/ha4db/app/shared/config/credentials
+    state: directory
+    owner: appsrv
+- name: copy production.key
+  ansible.builtin.copy:
+    remote_src: yes
+    src: /home/appsrv/ha4db/config/credentials/production.key
+    dest: /srv/ha4db/app/shared/config/credentials/production.key
+  become_user: appsrv
+  become: true
+- name: copy production.yml.enc
+  ansible.builtin.copy:
+    remote_src: yes
+    src: /home/appsrv/ha4db/config/credentials/production.yml.enc
+    dest: /srv/ha4db/app/shared/config/credentials/production.yml.enc
+  become_user: appsrv
+  become: true
 - name: run deploy
   command: bash -lc "bundle exec cap production deploy"
   args:
