@@ -27,8 +27,11 @@
   apt:
     name:
       - nodejs
-      - yarn
     state: latest
+- name: Install yarn package globally.
+  npm:
+    name: yarn
+    global: yes
 # checkout and setup app
 - name: chechout ha4db
   git:
@@ -138,12 +141,6 @@
     dest: /srv/ha4db/app
     state: directory
     owner: appsrv
-- name: run deploy:check
-  command: bash -lc "bundle exec cap production deploy:check"
-  args:
-    chdir: /home/appsrv/ha4db
-  become_user: appsrv
-  become: true
 - name: create deploy_path shared/config/credentials
   file:
     dest: /srv/ha4db/app/shared/config/credentials
@@ -161,6 +158,12 @@
     remote_src: yes
     src: /home/appsrv/ha4db/config/credentials/production.yml.enc
     dest: /srv/ha4db/app/shared/config/credentials/production.yml.enc
+  become_user: appsrv
+  become: true
+- name: run deploy:check
+  command: bash -lc "bundle exec cap production deploy:check"
+  args:
+    chdir: /home/appsrv/ha4db
   become_user: appsrv
   become: true
 - name: run deploy
