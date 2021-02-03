@@ -28,13 +28,15 @@
   register: production_key_check
 - name: create secret_key_base
   shell: ruby -e "require 'securerandom'; puts SecureRandom.hex(128)"
+  args:
+    chdir: /home/appsrv/ha4db
   become_user: appsrv
   become: true
   register: secret_key_base
 - name: generate production.key and enc
   shell: 'EDITOR="echo >> secret_key_base: {{ secret_key_base.stdout }}" bundle exec rails credentials:edit --environment production'
   args:
-    chdir: /home/appsrv/ha4db/current
+    chdir: /srv/ha4db/app/current
   become_user: appsrv
   become: true
   when: not production_key_check.stat.exists
