@@ -172,4 +172,26 @@
     chdir: /home/appsrv/ha4db
   become_user: appsrv
   become: true
+# nginx
+- name: install nginx
+  apt:
+    name:
+      - nginx
+    state: latest
+- name: copy nginx conf
+  copy:
+    src: roles/ha4db/templates/ha4db-nginx.conf
+    dest: /etc/nginx/sites-available/ha4db.conf
+  register: nginx_conf
+- name: make symbolic link
+  file:
+    src: /etc/nginx/sites-available/ha4db.conf
+    dest: /etc/nginx/sites-enabled/ha4db.conf
+    state: link
+  when: nginx_conf is changed
+- name: Start nginx
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
 
