@@ -11,3 +11,24 @@ Install dependency and setup everything for `ha4db`.
 ```sh
 ansible-playbook ha4db.yml
 ```
+
+## Create Administrator user
+
+You need to create administrator user at first.
+
+First, run `rails console` with production environment.
+
+```sh
+sudo su - appsrv
+cd /srv/ha4db/app/current
+bin/rails console -e production
+```
+
+In Rails console:
+
+```ruby
+a = AdminUser.new
+a.login_name = "your_name"
+a.password = "your_password"
+a.save
+```
