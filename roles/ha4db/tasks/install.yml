@@ -212,3 +212,10 @@
     name: nginx
     state: restarted
     enabled: yes
+# run sidekiq
+- name: run sidekiq
+  command: bash -lc "bundle exec sidekiq --environment=production"
+  args:
+    chdir: /srv/ha4db/app/current
+  become_user: appsrv
+  become: true
