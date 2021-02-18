@@ -212,10 +212,13 @@
     name: nginx
     state: restarted
     enabled: yes
-# run sidekiq
-- name: run sidekiq
-  command: bash -lc "bundle exec sidekiq --daemon --environment=production"
-  args:
-    chdir: /srv/ha4db/app/current
-  become_user: appsrv
-  become: true
+# install sidekiq systemd
+- name: copy sidekiq systemd
+  copy:
+    src: roles/ha4db/templates/sidekiq.service
+    dest: /etc/systemd/system/sidekiq.service
+- name: Start sidekiq
+  systemd:
+    name: sidekiq
+    state: restarted
+    enabled: yes
