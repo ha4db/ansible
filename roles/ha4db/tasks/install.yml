@@ -39,6 +39,17 @@
       - ffmpeg
       - imagemagick
     state: latest
+# install redis
+- name: install redis
+  apt:
+    name:
+      - redis-server
+    state: latest
+- name: Start redis
+  systemd:
+    name: redis
+    state: restarted
+    enabled: yes
 # checkout and setup app
 - name: chechout ha4db
   git:
