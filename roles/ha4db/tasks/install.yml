@@ -32,12 +32,13 @@
   npm:
     name: yarn
     global: yes
-# install image/video processing
-- name: install packages for image/video processing
+# install processing
+- name: install packages for processing
   apt:
     name:
       - ffmpeg
       - imagemagick
+      - pdal
     state: latest
 # checkout and setup app
 - name: chechout ha4db
