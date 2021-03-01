@@ -39,6 +39,8 @@
       - ffmpeg
       - imagemagick
       - pdal
+      - libvips-dev
+      - libvips-tools
     state: latest
 # checkout and setup app
 - name: chechout ha4db
