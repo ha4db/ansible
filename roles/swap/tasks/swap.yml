@@ -10,7 +10,7 @@
 
 - name: create swap file
   become: yes
-  command: fallocate -l 2048m {{ swap_file }}
+  command: fallocate -l 16384m {{ swap_file }}
   when: not swap_file_check.stat.exists
 
 - name: set permissions on swap file
